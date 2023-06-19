@@ -1,0 +1,16 @@
+{
+  "name": "EzTimer",
+  "short_name": "EzTimer",
+  "theme_color": "#ffc107",
+  "background_color": "#fafafa",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "icons": [
+    {
+      "src": "assets/icons/app_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
