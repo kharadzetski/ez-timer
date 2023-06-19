@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
-import { Subscription } from "rxjs";
+import { Subscription, map, pairwise } from "rxjs";
 import { DailyCounterService } from "src/app/service/daily-counter.service";
 import { TimerService } from "src/app/service/timer.service";
 
@@ -28,15 +28,22 @@ export class TimerComponent implements OnInit {
 
   startTimer() {
     const interval = 1000;
-    this.timerSubscription = this.timerService.timer(interval).subscribe(() => {
-      this.countdown -= interval;
-      if (this.countdown <= 0) {
-        this.reset();
-        this.counter += 1;
-        this.dailyCounterService.setDailyCounter("timer", this.counter);
-        this.ringDiv?.nativeElement.play();
-      }
-    });
+    this.timerSubscription = this.timerService
+      .timer(interval)
+      .pipe(
+        map(() => new Date().getTime()),
+        pairwise()
+      )
+      .subscribe(([first, second]) => {
+        console.log("delta:", second - first);
+        this.countdown -= second - first;
+        if (this.countdown <= 0) {
+          this.reset();
+          this.counter += 1;
+          this.dailyCounterService.setDailyCounter("timer", this.counter);
+          this.ringDiv?.nativeElement.play();
+        }
+      });
   }
 
   stopTimer() {
