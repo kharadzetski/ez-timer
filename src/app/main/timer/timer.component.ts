@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from "@angular/core";
 import { Subscription, map, pairwise } from "rxjs";
 import { DailyCounterService } from "src/app/service/daily-counter.service";
+import { NotificationService } from "src/app/service/notification.service";
 import { TimerService } from "src/app/service/timer.service";
 
 @Component({
@@ -19,7 +20,8 @@ export class TimerComponent implements OnInit {
 
   constructor(
     private timerService: TimerService,
-    private dailyCounterService: DailyCounterService
+    private dailyCounterService: DailyCounterService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -27,6 +29,7 @@ export class TimerComponent implements OnInit {
   }
 
   startTimer() {
+    this.notificationService.requestPermission();
     const interval = 1000;
     this.timerSubscription = this.timerService
       .timer(interval)
@@ -34,14 +37,16 @@ export class TimerComponent implements OnInit {
         map(() => new Date().getTime()),
         pairwise()
       )
-      .subscribe(([first, second]) => {
-        console.log("delta:", second - first);
+      .subscribe(async ([first, second]) => {
         this.countdown -= second - first;
         if (this.countdown <= 0) {
           this.reset();
           this.counter += 1;
           this.dailyCounterService.setDailyCounter("timer", this.counter);
           this.ringDiv?.nativeElement.play();
+          if (!document.hasFocus()) {
+            this.notificationService.showText("Time is up!");
+          }
         }
       });
   }
